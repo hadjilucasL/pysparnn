@@ -138,10 +138,22 @@ class ClusterIndex(object):
             for rng in range(0, features.shape[0], rng_step):
                 max_rng = min(rng + rng_step, features.shape[0])
                 records_rng = features[rng:max_rng]
-                for i, clstrs in enumerate(root.nearest_search(records_rng)):
-                    _random.shuffle(clstrs)
-                    for _, cluster in _k_best(clstrs, k=1):
-                        item_to_clusters[cluster].append(i + rng)
+
+                ### Lucas
+                scores_full, records_full = root.nearest_search_vec(records_rng)
+
+                for idx_clstr in range(0, scores_full.shape[0]):
+                    #rand_idxs = _np.random.permutation(scores_full.shape[1])
+                    #clstr_scores = scores_full[idx_clstr, :]
+                    #clstr_records = records_full[idx_clstr, :]
+                    #sort by score
+                    item_to_clusters[records_full[idx_clstr, 0]].append(idx_clstr + rng)
+                ### Lucas
+
+                # for i, clstrs in enumerate(root.nearest_search(records_rng)):
+                #     _random.shuffle(clstrs)
+                #     for _, cluster in _k_best(clstrs, k=1):
+                #         item_to_clusters[cluster].append(i + rng)
 
             clusters = []
             cluster_keeps = []

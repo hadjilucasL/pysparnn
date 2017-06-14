@@ -15,6 +15,7 @@ import numpy as _np
 import scipy.sparse as _sparse
 import scipy.spatial.distance as _spatial_distance
 
+
 class MatrixMetricSearch(object):
     """A matrix representation out of features."""
     __metaclass__ = _abc.ABCMeta
@@ -113,6 +114,46 @@ class MatrixMetricSearch(object):
             ret.append(curr_ret)
 
         return ret
+
+    def nearest_search_vec(self, features):
+        """Find the closest item(s) for each set of features in features_list.
+
+        Args:
+            features: A matrix with rows that represent records
+                (corresponding to the elements in records_data) and columns
+                that describe a point in space for each row.
+
+        Returns:
+            For each element in features_list, return the k-nearest items
+            and their distance scores
+            [[(score1_1, item1_1), ..., (score1_k, item1_k)],
+             [(score2_1, item2_1), ..., (score2_k, item2_k)], ...]
+        """
+
+        dist_matrix = self._distance(features)
+        arg_index = _np.argsort(dist_matrix)
+
+        # randomise duplicate items
+        scores_dups = dist_matrix.sum(axis=1) < 0.00001
+        arg_index[scores_dups] = self.scramble(arg_index[scores_dups])
+
+        scores_full = dist_matrix[_np.arange(_np.shape(dist_matrix)[0])[:, _np.newaxis], arg_index]
+
+        records_full = self.records_data[_np.newaxis, :]
+        records_full = _np.repeat(records_full, dist_matrix.shape[0], axis=0)
+        records_full = records_full[_np.arange(_np.shape(dist_matrix)[0])[:, _np.newaxis], arg_index]
+
+        return scores_full, records_full
+
+    def scramble(self, a, axis=-1):
+        """
+        Return an array with the values of `a` independently shuffled along the
+        given axis
+        """
+        b =_np.random.random(a.shape)
+        idx = _np.argsort(b, axis=axis)
+        shuffled = a[_np.arange(a.shape[0])[:, None], idx]
+        return shuffled
 
     def remove_near_duplicates(self):
         """If there are 2 or more records with 0 distance from eachother - 
