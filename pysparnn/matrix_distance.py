@@ -130,15 +130,20 @@ class MatrixMetricSearch(object):
              [(score2_1, item2_1), ..., (score2_k, item2_k)], ...]
         """
 
+        # get distances
         dist_matrix = self._distance(features)
+
+        # sort each row in ascending order of distances
         arg_index = _np.argsort(dist_matrix)
 
-        # randomise duplicate items
-        scores_dups = dist_matrix.sum(axis=1) < 0.00001
-        arg_index[scores_dups] = self.scramble(arg_index[scores_dups])
+        # detect and randomise rows for which there is no clear order of distances
+        scores_zero_distance = dist_matrix.sum(axis=1) < 0.00001
+        arg_index[scores_zero_distance] = self.scramble(arg_index[scores_zero_distance])
 
+        # sort scores row-wise depending on arg_index
         scores_full = dist_matrix[_np.arange(_np.shape(dist_matrix)[0])[:, _np.newaxis], arg_index]
 
+        # sort records row-wise depending on arg_index
         records_full = self.records_data[_np.newaxis, :]
         records_full = _np.repeat(records_full, dist_matrix.shape[0], axis=0)
         records_full = records_full[_np.arange(_np.shape(dist_matrix)[0])[:, _np.newaxis], arg_index]
