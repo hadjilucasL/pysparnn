@@ -124,10 +124,10 @@ class MatrixMetricSearch(object):
                 that describe a point in space for each row.
 
         Returns:
-            For each element in features_list, return the k-nearest items
-            and their distance scores
-            [[(score1_1, item1_1), ..., (score1_k, item1_k)],
-             [(score2_1, item2_1), ..., (score2_k, item2_k)], ...]
+            scores_full (numpy.array): 2D array where each record has its columns,
+                                        distance scoress, sorted in ascending order
+            records_full (numpy.array): 2D array where each record has its items
+                                        sorted in ascending order of distance
         """
 
         # get distances
